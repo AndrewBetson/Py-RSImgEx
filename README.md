@@ -1,8 +1,8 @@
 Python utility that extracts or lists files from (most) sixth generation Rockstar IMG archives.
 
 # Supported Formats
-- Version 1 (III/VC/SA/Bully)
-- Version 1X (III/VC XBOX)
+- Version 1 (III/VC/Bully)
+- Version 1x (III/VC XBOX)
 - Version 2 (SA)
 
 # Usage
