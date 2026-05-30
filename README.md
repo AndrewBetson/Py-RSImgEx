@@ -6,9 +6,16 @@ Python utility that extracts or lists files from (most) sixth generation Rocksta
 - Version 2 (SA)
 
 # Usage
-If running from source, install dependencies using `pip install -r requirements.txt`
+Install dependencies using `pip install -r requirements.txt`
 
-Execute `python main.py -h` for full usage info.
+## Extract a file from an archive
+`python main.py -i|--input <-o|--output ./extract_dir> ./gta3.img -v 1|1x|2 -e|--extract file_to_extr.act`
+
+## Extract all files from an archive
+`python main.py -i|--input <-o|--output ./extract_dir> ./gta3.img -v 1|1x|2 -x|--extract-all`
+
+## List all files in an archive
+`python main.py -i|--input ./gta3.img -v 1|1x|2 -l|--list`
 
 # License
 This utility is licensed under version 3 of the GNU General Public License.
