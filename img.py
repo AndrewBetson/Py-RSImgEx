@@ -65,8 +65,7 @@ class ImgArchive:
 		if version == EImgVersion.III_VC or version == EImgVersion.III_VC_XBOX:
 			dir_file = Path( f'{os.path.splitext( path )[ 0 ]}.dir' )
 			if not dir_file.exists():
-				print( f'Error: Failed to find matching .dir file for input file {path}. Is this a version 1/1X IMG archive?' )
-				exit( -1 )
+				raise Exception( f'Error: Failed to find matching .dir file for input file {path}. Is this a version 1/1X IMG archive?' )
 
 		with open( dir_file, 'rb' ) as dir:
 			if version == EImgVersion.III_VC or version == EImgVersion.III_VC_XBOX:
@@ -78,8 +77,7 @@ class ImgArchive:
 			else:
 				magic = dir.read( 4 )
 				if magic != b'VER2':
-					print( 'Error: Failed to find VER2 magic at beginning of provided IMG archive. Is this a version 2 IMG archive?' )
-					exit( -1 )
+					raise Exception( 'Error: Failed to find VER2 magic at beginning of provided IMG archive. Is this a version 2 IMG archive?' )
 
 				num_files = int.from_bytes( dir.read( 4 ), 'little' )
 				for _ in range( num_files ):
@@ -100,8 +98,7 @@ class ImgArchive:
 				break
 
 		if entry == None:
-			print( f'Error: Failed to find file "{file}" in provided IMG archive.' )
-			exit( 0 )
+			raise Exception( f'Error: Failed to find file "{file}" in provided IMG archive.' )
 
 		with open( self._path, 'rb' ) as img:
 			self._do_extraction( entry, out_path, img )

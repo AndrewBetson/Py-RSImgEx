@@ -19,16 +19,13 @@ parser.add_argument( '-l', '--list', action='store_true', help='List all files i
 args = parser.parse_args()
 
 if not args.input.exists():
-	print( f'Error: Input file "{args.input}" does not exist.' )
-	exit( 0 )
+	raise Exception( f'Error: Input file "{args.input}" does not exist.' )
 
 if not args.input.name.lower().endswith( '.img' ):
-	print( f'Error: Input file "{args.input}" is not a .img file.' )
-	exit( 0 )
+	raise Exception( f'Error: Input file "{args.input}" is not a .img file.' )
 
 if not args.extract and not args.extract_all and not args.list:
-	print( 'Error: Nothing to do! Pass -e|--extract <file>, -x|--extract-all, or -l|--list to operate on the archive!' )
-	exit( 0 )
+	raise Exception( 'Error: Nothing to do! Pass -e|--extract <file>, -x|--extract-all, or -l|--list to operate on the archive!' )
 
 version = EImgVersion.III_VC
 match args.version.lower():
