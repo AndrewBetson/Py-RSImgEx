@@ -6,6 +6,8 @@ from enum import IntEnum
 from pathlib import Path
 
 SECTOR_SIZE = 2048
+MAX_DECOMPRESSED_BLOCK_SIZE = 131072
+COMPRESSED_BLOCK_HEADER_SIZE = 12
 
 @enum.unique
 class EImgVersion( IntEnum ):
@@ -118,13 +120,14 @@ class ImgArchive:
 				data = stream.read( file.size )
 			else:
 				stream.read( 4 ) # checksum, we don't need this.
-				stream.read( 4 ) # total compressed size, including the compression header.
+				total_cmp_size = int.from_bytes( stream.read( 4 ), 'little' )
 
+				num_cmp_bytes_read = 0
 				while 1:
 					# If this is the intended way to check if
 					# we've reached the last chunk, it's really stupid.
-					test = int.from_bytes( stream.read( 4 ), 'little' ) # unknown, always(?) 0x04000000.
-					if test != 0x04:
+					test = int.from_bytes( stream.read( 4 ), 'little' )
+					if test != 0x04 or num_cmp_bytes_read >= total_cmp_size:
 						stream.seek( -4, os.SEEK_CUR )
 
 						# Read the garbage data after the actual data
@@ -133,15 +136,12 @@ class ImgArchive:
 
 						break
 					else:
-						decmp_size = int.from_bytes( stream.read( 4 ), 'little' )
+						stream.read( 4 ) # in theory this is supposed to be the decompressed size, but it's always the same as the compressed size.
 						cmp_size = int.from_bytes( stream.read( 4 ), 'little' )
 
-						# We don't actually know how big the decompressed data is
-						# because the field that's meant to store it in the compression
-						# header just stores the compressed size again.
-						#
-						# So just multiply it by 16, whatever man.
-						data += lzo.decompress( stream.read( cmp_size ), False, decmp_size * 16, algorithm='LZO1X' )
+						data += lzo.decompress( stream.read( cmp_size ), False, MAX_DECOMPRESSED_BLOCK_SIZE, algorithm='LZO1X' )
+
+						num_cmp_bytes_read += cmp_size + COMPRESSED_BLOCK_HEADER_SIZE
 		else:
 			data += stream.read( file.streaming_size ) # type: ignore
 
