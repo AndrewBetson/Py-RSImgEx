@@ -10,9 +10,6 @@ If running from source, install dependencies using `pip install -r requirements.
 
 Execute `python main.py -h` for full usage info.
 
-# TODO
-- *Maybe* support LCS/VCS IMG/LVZ files?
-
 # License
 This utility is licensed under version 3 of the GNU General Public License.
 
