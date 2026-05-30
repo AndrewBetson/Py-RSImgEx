@@ -12,7 +12,7 @@ parser = argparse.ArgumentParser(
 )
 parser.add_argument( '-i', '--input', type=Path, help='File to operate on.', required=True )
 parser.add_argument( '-o', '--output', default='./out', type=Path, help='Path to save extracted files to.' )
-parser.add_argument( '-v', '--version', type=str, choices=( '1', '1X', '2' ), help='Archive version we\'re dealing with. 1 = III/VC/Bully, 1X = III/VC XBOX, 2 = SA', required=True )
+parser.add_argument( '-v', '--version', type=str, choices=( '1', '1x', '2' ), help='Archive version we\'re dealing with. 1 = III/VC/Bully, 1X = III/VC XBOX, 2 = SA', required=True )
 parser.add_argument( '-e', '--extract', type=str, default='', help='Extract a file in the archive to the path set by -o|--output.' )
 parser.add_argument( '-x', '--extract-all', action='store_true', help='Extract all files in the archive to the path set by -o|--output.' )
 parser.add_argument( '-l', '--list', action='store_true', help='List all files in the archive.' )
@@ -28,7 +28,7 @@ if not args.extract and not args.extract_all and not args.list:
 	raise Exception( 'Error: Nothing to do! Pass -e|--extract <file>, -x|--extract-all, or -l|--list to operate on the archive!' )
 
 version = EImgVersion.III_VC
-match args.version.lower():
+match args.version:
 	case '1': version = EImgVersion.III_VC
 	case '1x': version = EImgVersion.III_VC_XBOX
 	case '2': version = EImgVersion.SA
