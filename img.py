@@ -12,8 +12,7 @@ COMPRESSED_BLOCK_HEADER_SIZE = 12
 @enum.unique
 class EImgVersion( IntEnum ):
 	III_VC = 0
-	III_VC_XBOX = 1
-	SA = 2
+	SA = 1
 
 class ImgDirEntryV1:
 	offset: int
@@ -57,29 +56,37 @@ class ImgArchive:
 	_version: EImgVersion
 
 	@classmethod
-	def from_path( cls, path: Path, version: EImgVersion ):
+	def from_path( cls, path: Path ):
 		o = cls()
 
 		o._path = path
+
+		dir_file = Path( f'{os.path.splitext( path )[ 0 ]}.dir' )
+		version = EImgVersion.III_VC
+		if not dir_file.exists():
+			dir_file = path
+			version = EImgVersion.SA
+
+		with open( path, 'rb' ) as img:
+			# Double-check that we're not an SA IMG archive,
+			# in case a user has both an SA gta3.img and a
+			# III/VC gta3.dir in the same folder for some reason.
+			magic = img.read( 4 )
+			if magic == b'VER2':
+				dir_file = path
+				version = EImgVersion.SA
+
 		o._version = version
 
-		dir_file = path
-		if version == EImgVersion.III_VC or version == EImgVersion.III_VC_XBOX:
-			dir_file = Path( f'{os.path.splitext( path )[ 0 ]}.dir' )
-			if not dir_file.exists():
-				raise Exception( f'Error: Failed to find matching .dir file for input file {path}. Is this a version 1/1X IMG archive?' )
-
 		with open( dir_file, 'rb' ) as dir:
-			if version == EImgVersion.III_VC or version == EImgVersion.III_VC_XBOX:
+			if version == EImgVersion.III_VC:
 				dir.seek( 0, os.SEEK_END )
 				num_files = int( dir.tell() / 32 )
 				dir.seek( 0, os.SEEK_SET )
 				for _ in range( num_files ):
 					o.files.append( ImgDirEntryV1.from_stream( dir ) )
 			else:
-				magic = dir.read( 4 )
-				if magic != b'VER2':
-					raise Exception( 'Error: Failed to find VER2 magic at beginning of provided IMG archive. Is this a version 2 IMG archive?' )
+				dir.read( 4 ) # magic, which we've already validated above
 
 				num_files = int.from_bytes( dir.read( 4 ), 'little' )
 				for _ in range( num_files ):
@@ -111,11 +118,9 @@ class ImgArchive:
 		stream.seek( file.offset, os.SEEK_SET )
 		data = bytearray()
 		if self._version == EImgVersion.III_VC:
-			data += stream.read( file.size )
-		elif self._version == EImgVersion.III_VC_XBOX:
 			cmp_magic = int.from_bytes( stream.read( 4 ), 'little' )
 
-			if cmp_magic != 0x67A3A1CE and cmp_magic != 0xCEA1A367:
+			if cmp_magic != 0x67A3A1CE:
 				stream.seek( -4, os.SEEK_CUR )
 				data = stream.read( file.size )
 			else:
@@ -124,10 +129,9 @@ class ImgArchive:
 
 				num_cmp_bytes_read = 0
 				while 1:
-					# If this is the intended way to check if
-					# we've reached the last chunk, it's really stupid.
-					test = int.from_bytes( stream.read( 4 ), 'little' )
-					if test != 0x04 or num_cmp_bytes_read >= total_cmp_size:
+					stream.read( 4 ) # unknown, always 0x04000000
+
+					if num_cmp_bytes_read >= total_cmp_size:
 						stream.seek( -4, os.SEEK_CUR )
 
 						# Read the garbage data after the actual data
@@ -142,7 +146,7 @@ class ImgArchive:
 						data += lzo.decompress( stream.read( cmp_size ), False, MAX_DECOMPRESSED_BLOCK_SIZE, algorithm='LZO1X' )
 
 						num_cmp_bytes_read += cmp_size + COMPRESSED_BLOCK_HEADER_SIZE
-		else:
+		elif self._version == EImgVersion.SA:
 			data += stream.read( file.streaming_size ) # type: ignore
 
 		out_file = open( out_path.joinpath( file.name ), 'wb' )
