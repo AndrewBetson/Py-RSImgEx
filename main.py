@@ -15,7 +15,7 @@ parser.add_argument( '-o', '--output', default='./out', type=Path, help='Path to
 parser.add_argument( '-d', '--decrypt', action='store_true', help='Decrypt the archive. Only applicable to version 3 (GTA IV) archives.' )
 parser.add_argument( '-e', '--extract', type=str, default='', help='Extract a file in the archive to the path set by -o|--output.' )
 parser.add_argument( '-x', '--extract-all', action='store_true', help='Extract all files in the archive to the path set by -o|--output.' )
-parser.add_argument( '-i', '--info', action='store_true', help='Print information about each file in the archive.' )
+parser.add_argument( '--info', action='store_true', help='Print information about each file in the archive.' )
 args = parser.parse_args()
 
 if not args.input.exists():

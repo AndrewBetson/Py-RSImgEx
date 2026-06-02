@@ -21,7 +21,7 @@ Install dependencies using `pip install -r requirements.txt`
 ***NOTE: DECRYPTION OVERWRITES THE ORIGINAL FILE***
 
 ## Print info about each file in an archive
-`python main.py -i|--input ./gta3.img -i|--info`
+`python main.py -i|--input ./gta3.img --info`
 
 # License
 This utility is licensed under version 3 of the GNU General Public License.
