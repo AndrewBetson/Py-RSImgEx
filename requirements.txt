@@ -1,1 +1,2 @@
 python-lzo>=1.15
+pycryptodome>=3.23.0
